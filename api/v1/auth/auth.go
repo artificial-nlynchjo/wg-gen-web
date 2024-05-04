@@ -1,6 +1,11 @@
 package auth
 
 import (
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/patrickmn/go-cache"
 	log "github.com/sirupsen/logrus"
@@ -8,8 +13,6 @@ import (
 	"github.com/vx3r/wg-gen-web/model"
 	"github.com/vx3r/wg-gen-web/util"
 	"golang.org/x/oauth2"
-	"net/http"
-	"time"
 )
 
 // ApplyRoutes applies router to gin Router
@@ -95,6 +98,20 @@ func oauth2Exchange(c *gin.Context) {
 	}
 
 	cacheDb.Delete(loginVals.ClientId)
+
+	// check if user is in org
+	teamsEnv := os.Getenv("OAUTH2_TEAMS")
+	var teams []string
+	if teamsEnv != "" {
+		teams = strings.Split(teamsEnv, ",")
+	}
+
+	inOrg, err := oauth2Client.CheckMembership(oauth2Token, os.Getenv("OAUTH2_ORG"), teams)
+	if err != nil || !inOrg {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+
 	cacheDb.Set(oauth2Token.AccessToken, oauth2Token, cache.DefaultExpiration)
 
 	c.JSON(http.StatusOK, oauth2Token.AccessToken)

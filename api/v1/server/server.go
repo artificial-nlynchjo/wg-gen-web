@@ -1,6 +1,8 @@
 package server
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"github.com/vx3r/wg-gen-web/auth"
@@ -8,7 +10,6 @@ import (
 	"github.com/vx3r/wg-gen-web/model"
 	"github.com/vx3r/wg-gen-web/version"
 	"golang.org/x/oauth2"
-	"net/http"
 )
 
 // ApplyRoutes applies router to gin Router
