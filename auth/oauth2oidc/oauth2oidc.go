@@ -51,6 +51,7 @@ func (o *Oauth2idc) CodeUrl(state string) string {
 
 // Check if current user is in given org
 func (o *Oauth2idc) CheckMembership(oauth2Token *oauth2.Token, org string, teams []string) (bool, error) {
+	// TODO: Add real implementation
 	return false, nil
 }
 

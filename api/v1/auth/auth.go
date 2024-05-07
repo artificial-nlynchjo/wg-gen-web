@@ -99,17 +99,21 @@ func oauth2Exchange(c *gin.Context) {
 
 	cacheDb.Delete(loginVals.ClientId)
 
-	// check if user is in org
-	teamsEnv := os.Getenv("OAUTH2_TEAMS")
-	var teams []string
-	if teamsEnv != "" {
-		teams = strings.Split(teamsEnv, ",")
-	}
+	// This is primarily used for github, but can be used for other oauth2 providers where it makes sense.
+	// Check if user is in org, use OAUTH2_TEAMS if you want to further restrict access within an org. This is optional.
+	if os.Getenv("OAUTH2_ORG") != "" {
 
-	inOrg, err := oauth2Client.CheckMembership(oauth2Token, os.Getenv("OAUTH2_ORG"), teams)
-	if err != nil || !inOrg {
-		c.AbortWithStatus(http.StatusForbidden)
-		return
+		teamsEnv := os.Getenv("OAUTH2_TEAMS")
+		var teams []string
+		if teamsEnv != "" {
+			teams = strings.Split(teamsEnv, ",")
+		}
+
+		inOrg, err := oauth2Client.CheckMembership(oauth2Token, os.Getenv("OAUTH2_ORG"), teams)
+		if err != nil || !inOrg {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
 	}
 
 	cacheDb.Set(oauth2Token.AccessToken, oauth2Token, cache.DefaultExpiration)
